@@ -348,13 +348,7 @@ def print_report(results, features, logname, flight_time):
 
 
 # -- Main ----------------------------------------------------------------------
-def main():
-    if len(sys.argv) < 2:
-        logging.info("Usage:   python log_val.py <path_to_log.bin>")
-        logging.info("Example: python log_val.py crash.bin")
-        sys.exit(1)
-
-    filepath = sys.argv[1]
+def analyze_log(filepath):
     if not os.path.exists(filepath):
         logging.error(f"File not found: {filepath}")
         sys.exit(1)
@@ -375,6 +369,16 @@ def main():
 
     outpath = plot_diagnosis(dfs, features, results, logname, flight_time, out_dir)
     logging.info(f"Diagnosis plot saved to {outpath}")
+    return outpath
+
+def main():
+    if len(sys.argv) < 2:
+        logging.info("Usage:   python log_val.py <path_to_log.bin>")
+        logging.info("Example: python log_val.py crash.bin")
+        sys.exit(1)
+
+    filepath = sys.argv[1]
+    analyze_log(filepath)
 
 if __name__ == "__main__":
     main()
