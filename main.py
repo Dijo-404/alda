@@ -13,7 +13,7 @@ Usage:  python main.py <path_to_log.bin>
 
 import sys
 import argparse
-from log_val import analyze_log
+from log_analyzer import analyze_log
 from rules import THRESHOLDS
 
 def main():
