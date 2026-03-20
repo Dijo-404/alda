@@ -65,3 +65,9 @@ python main.py <path_to_log.bin> --show-thresholds
 ```
 
 ## Example Run
+
+#### Generated Output 
+<img width="764" height="653" alt="image" src="https://github.com/user-attachments/assets/84234667-d959-49b5-99eb-d6b463798b3d" />
+
+#### CLI Output 
+<img width="764" height="497" alt="image" src="https://github.com/user-attachments/assets/81a039c2-2117-4273-8105-57a7c76ddaa1" />
