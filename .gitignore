@@ -32,6 +32,7 @@ MANIFEST
 *.tlog
 *.png
 *.pdf
+tmp_dataset/
 
 # Virtual Environments
 .env
