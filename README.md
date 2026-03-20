@@ -1,4 +1,4 @@
-# ALDA
+# alda
 
 ArduPilot Log Diagnosis Assistant
 
@@ -14,7 +14,7 @@ ALDA is an AI-assisted diagnostic tool for ArduPilot `.bin` logs. It automatical
 ## Project Structure
 
 ```text
-ALDA/
+alda/
 ├── main.py          # Command-line entry point
 ├── log_val.py       # Core parsing, feature extraction, and report generation logic
 ├── rules.py         # Diagnostic rules, threshold definitions, and classification logic
