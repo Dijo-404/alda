@@ -10,8 +10,8 @@ alda is an AI-assisted diagnostic tool for ArduPilot `.bin` logs. It automatical
 - Generates visual multi-panel diagnostic plots for insightful tracking.
 - Friendly command-line interface with a clean report summary.
 - Output generation is modular:
-    - PNG chart generation lives in `plot_output.py`
-    - Terminal summary rendering lives in `report_output.py`
+  - PNG chart generation lives in `plot_output.py`
+  - Terminal summary rendering lives in `report_output.py`
 - Modular architecture allowing for easy integration into other pipelines.
 
 ## Project Structure
@@ -53,6 +53,7 @@ pip install -r requirements.txt
 ```
 
 ## Dataset Link
+
 ```
 https://discuss.ardupilot.org/uploads/default/original/3X/7/6/76e9fe83154fe88ff318770a60b493056acb5ad0.bin
 ```
@@ -87,8 +88,10 @@ python -m pytest -q tests/test_rules.py
 
 ## Example Run
 
-#### Generated Output 
+#### Generated Output
+
 <img width="764" height="653" alt="image" src="https://github.com/user-attachments/assets/84234667-d959-49b5-99eb-d6b463798b3d" />
 
-#### CLI Output 
+#### CLI Output
+
 <img width="764" height="497" alt="image" src="https://github.com/user-attachments/assets/81a039c2-2117-4273-8105-57a7c76ddaa1" />

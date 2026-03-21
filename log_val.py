@@ -17,7 +17,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import annotations
 
+from main import main
 
-from visualiser import plot_diagnosis
 
-__all__ = ["plot_diagnosis"]
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -22,19 +22,23 @@ def print_report(results, features, logname, flight_time):
     logging.info(f"  {GRY}GSoC 2026  |  Dijo  |  github.com/Dijo-404{R}")
     logging.info("=" * width)
     logging.info(f"  Log:          {logname}")
-    logging.info(f"  Flight time:  {int(flight_time//60)}m {int(flight_time%60)}s")
+    logging.info(f"  Flight time:  {int(flight_time // 60)}m {int(flight_time % 60)}s")
     logging.info("-" * width)
 
     bar_len = int(confidence * 32)
     bar = "#" * bar_len + "-" * (32 - bar_len)
-    logging.info(f"\n  {B}ROOT CAUSE :{R}  {col}{B}{root_cause.replace('_',' ').upper()}{R}")
-    logging.info(f"  Confidence  :  {col}[{bar}] {confidence*100:.0f}%{R}")
+    logging.info(
+        f"\n  {B}ROOT CAUSE :{R}  {col}{B}{root_cause.replace('_', ' ').upper()}{R}"
+    )
+    logging.info(f"  Confidence  :  {col}[{bar}] {confidence * 100:.0f}%{R}")
     logging.info(f"  Evidence    :  {CYN}{evidence}{R}")
 
     if len(results) > 1:
         logging.info(f"\n  {GRY}Other candidates:{R}")
         for cls, conf, ev in results[1:3]:
-            logging.info(f"  {GRY}  * {cls.replace('_',' '):<24} ({conf*100:.0f}%)  -  {ev[:52]}{R}")
+            logging.info(
+                f"  {GRY}  * {cls.replace('_', ' '):<24} ({conf * 100:.0f}%)  -  {ev[:52]}{R}"
+            )
 
     logging.info(f"\n  {B}{GRN}SUGGESTED FIXES:{R}")
     for i, fix in enumerate(FIXES.get(root_cause, [])[:4], 1):

@@ -40,7 +40,9 @@ def test_ekf_marked_downstream_when_vibration_present():
 
     assert results[0][0] == "vibration_high"
     ekf_rows = [r for r in results if r[0] == "ekf_failure"]
-    assert ekf_rows, "Expected ekf_failure candidate when EKF variance exceeds threshold"
+    assert ekf_rows, (
+        "Expected ekf_failure candidate when EKF variance exceeds threshold"
+    )
     assert "[downstream of vibration]" in ekf_rows[0][2]
 
 
