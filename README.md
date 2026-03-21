@@ -1,78 +1,126 @@
-# alda
+# ALDA
 
-ArduPilot Log Diagnosis Assistant
+ArduPilot Log Diagnosis Assistant.
 
-alda is an AI-assisted diagnostic tool for ArduPilot `.bin` logs. It automatically extracts key features, analyzes telemetry data for common failure patterns, and provides actionable suggestions to resolve issues.
+ALDA analyzes ArduPilot DataFlash logs (`.bin`/`.log`) and produces a ranked diagnosis with confidence, evidence, suggested fixes, and a plot artifact.
 
-## Features
+## What It Does
 
-- Analyzes vibration, EKF variance, GPS degradation, compass interference, power issues, and motor imbalance.
-- Generates visual multi-panel diagnostic plots for insightful tracking.
-- Friendly command-line interface with a clean report summary.
-- Output generation is modular:
-  - PNG chart generation lives in `plot_output.py`
-  - Terminal summary rendering lives in `report_output.py`
-- Modular architecture allowing for easy integration into other pipelines.
+- Parses DataFlash telemetry using `pymavlink`
+- Extracts features from key message families (`VIBE`, `EKF4/EKF1`, `ATT`, `GPS`, `BAT`, `COMPASS`, `ESC`, `RCOU`, `MODE`, `ERR`, `EV`)
+- Runs rule-based classification with causal ordering
+- Handles missing telemetry streams gracefully (including missing `COMPASS`)
+- Supports machine-consumable JSON output for API integration
+- Generates a PNG diagnosis chart using `matplotlib` with `Agg` backend (no display server required)
 
-## Project Structure
+## Current Failure Classes
+
+- `vibration_high`
+- `ekf_failure`
+- `compass_interference`
+- `gps_glitch`
+- `motor_imbalance`
+- `power_issue`
+- `rc_failsafe`
+- `thrust_loss`
+- `unknown`
+
+## Repository Structure
 
 ```text
 alda/
-├── main.py          # Command-line entry point
-├── log_analyzer.py  # Core parsing, feature extraction, and diagnosis orchestration
-├── plot_output.py   # PNG plot generation and visualization layout
-├── report_output.py # Terminal report rendering
-├── rules.py         # Diagnostic rules, threshold definitions, and classification logic
-├── tests/           # Unit tests (pytest)
+├── main.py            # Primary CLI and pipeline orchestration
+├── parser.py          # parse_log + extract_features
+├── classifier.py      # classify + thresholds + causal arbiter + confidence floor
+├── visualiser.py      # plot_diagnosis (Agg backend)
+├── log_val.py         # Entry-point shim to main CLI
+├── log_analyzer.py    # Backward-compat wrapper around run_analysis
+├── rules.py           # Backward-compat classify/thresholds facade
+├── plot_output.py     # Backward-compat plot_diagnosis facade
+├── report_output.py   # Legacy terminal report helper
+├── tests/
 │   └── test_rules.py
-├── README.md        # Project documentation
-└── .gitignore       # Git ignore rules for logs, plot outputs, and python cache
+├── requirements.txt
+└── README.md
 ```
 
-## System Flow Diagram
+## Processing Flow
 
 ```mermaid
 graph TD
-    A[main.py: CLI Input] -->|Log File Path| B[log_analyzer.py: analyze_log]
-    B --> C[log_analyzer.py: parse_log]
-    C -->|Extracts DataFrames| D[log_analyzer.py: extract_features]
-    D -->|Dict of Features| E[rules.py: classify]
-    E -->|Rules & Thresholds| F[rules.py: Failure Candidates]
-    F -->|Prioritized Issues| G[report_output.py: print_report]
-    F -->|Plotting Data| H[plot_output.py: plot_diagnosis]
-    H --> I[Output: Diagnostic Plot .png]
-    G --> J[Output: Terminal Summary]
+    A[CLI: main.py / log_val.py] --> B[parser.parse_log]
+    B --> C[parser.extract_features]
+    C --> D[classifier.classify]
+    D --> E[visualiser.plot_diagnosis]
+    D --> F[Text or JSON output]
+    E --> G[diagnosis_output.png]
 ```
 
-## Prerequisites
-
-Ensure you have the required Python packages installed:
+## Installation
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
-```
-
-## Dataset Link
-
-```
-https://discuss.ardupilot.org/uploads/default/original/3X/7/6/76e9fe83154fe88ff318770a60b493056acb5ad0.bin
 ```
 
 ## Usage
 
-Run the main script by providing the path to an ArduPilot `.bin` log:
+### Standard CLI
 
 ```bash
 python main.py <path_to_log.bin>
 ```
 
-You can also view the current classification thresholds by running:
+### Alternative entrypoint
+
+```bash
+python log_val.py <path_to_log.bin>
+```
+
+### CLI options
 
 ```bash
 python main.py <path_to_log.bin> --show-thresholds
+python main.py <path_to_log.bin> --verbose
+python main.py <path_to_log.bin> --json
 ```
 
-## Running Tests
+- `--show-thresholds`: prints active classifier thresholds
+- `--verbose`: prints all extracted features (default shows a subset)
+- `--json`: emits structured JSON payload (for API usage)
+
+## JSON Output Schema (Top-Level)
+
+`--json` returns:
+
+- `log_file`
+- `flight_time_sec`
+- `message_counts`
+- `features`
+- `diagnosis` (ordered list of `{class, confidence, evidence}`)
+- `root_cause`
+- `root_confidence`
+- `plot_path`
+
+On failure, JSON mode returns:
+
+```json
+{
+  "error": "..."
+}
+```
+
+## Notes on Diagnosis Logic
+
+- RC failsafe detection considers:
+  - `ERR.Subsys == 3`
+  - `MODE` transitions to RTL/LAND (`11`/`9`) without detected pilot input
+- Compass interference is confidence-penalized when extreme vibration or severe power collapse likely explains magnetometer excursions
+- Low-confidence suppression demotes weak candidates (default floor: `0.45`) into `unknown` notes
+- Causal arbiter preserves ordering and annotates downstream effects (for example, vibration→EKF and power→vibration)
+
+## Tests
 
 Run all tests:
 
@@ -80,18 +128,18 @@ Run all tests:
 python -m pytest -q
 ```
 
-Run only classifier tests:
+Run classifier-focused tests:
 
 ```bash
 python -m pytest -q tests/test_rules.py
 ```
 
-## Example Run
+## Example Dataset Link
 
-#### Generated Output
+```text
+https://discuss.ardupilot.org/uploads/default/original/3X/7/6/76e9fe83154fe88ff318770a60b493056acb5ad0.bin
+```
 
-<img width="764" height="653" alt="image" src="https://github.com/user-attachments/assets/84234667-d959-49b5-99eb-d6b463798b3d" />
+## License
 
-#### CLI Output
-
-<img width="764" height="497" alt="image" src="https://github.com/user-attachments/assets/81a039c2-2117-4273-8105-57a7c76ddaa1" />
+GPL v3. See `LICENSE`.
