@@ -56,6 +56,12 @@ graph TD
     E --> G[diagnosis_output.png]
 ```
 
+##  CLI Output 
+<img width="956" height="595" alt="image" src="https://github.com/user-attachments/assets/b915506f-fe3e-4990-aa47-64cd56f2c3e1" />
+
+##  Generated Output 
+<img width="2085" height="1702" alt="diagnosis_output" src="https://github.com/user-attachments/assets/0e7b0bc7-c1e9-4863-ba25-0d74c208421c" />
+
 ## Installation
 
 ```bash
