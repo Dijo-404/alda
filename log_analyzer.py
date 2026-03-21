@@ -26,7 +26,7 @@ def parse_log(filepath):
     msg_counts = defaultdict(int)
 
     wanted = {"VIBE", "EKF4", "EKF1", "ATT", "GPS", "BAT", "RCIN",
-              "COMPASS", "ESC", "MODE", "ERR", "EV", "BARO", "IMU"}
+              "COMPASS", "ESC", "MODE", "ERR", "EV", "BARO", "IMU", "RCOU"}
 
     while True:
         try:
@@ -68,8 +68,25 @@ def parse_log(filepath):
 
 
 def extract_features(dfs):
-    """Extract diagnostic features from parsed telemetry."""
+    """Extract diagnostic features -- uses pre-event window only to avoid
+    crash-sequence noise causing false compass interference diagnoses."""
     features = {}
+
+    pre_event_dfs = {}
+    cutoff_time = None
+    if "ERR" in dfs and len(dfs["ERR"]) > 0:
+        cutoff_time = dfs["ERR"]["time"].iloc[0]
+    elif "EV" in dfs and len(dfs["EV"]) > 0:
+        cutoff_time = dfs["EV"]["time"].iloc[0]
+
+    for mtype, df in dfs.items():
+        if cutoff_time is not None and "time" in df.columns:
+            window = df[df["time"] <= cutoff_time].copy()
+            pre_event_dfs[mtype] = window if len(window) > 10 else df
+        else:
+            pre_event_dfs[mtype] = df
+
+    dfs = pre_event_dfs
 
     if "VIBE" in dfs:
         vdf = dfs["VIBE"]
@@ -138,6 +155,19 @@ def extract_features(dfs):
                 spread = rpm_data.max(axis=1) - rpm_data.min(axis=1)
                 features["motor_rpm_spread_max"]  = float(spread.max())
                 features["motor_rpm_spread_mean"] = float(spread.mean())
+
+    if "RCOU" in dfs:
+        rcdf = dfs["RCOU"]
+        pwm_cols = [c for c in rcdf.columns
+                    if c.startswith("C") and c != "Ch"]
+        if pwm_cols:
+            max_pwm = rcdf[pwm_cols].max(axis=1)
+            total = len(max_pwm)
+            if total > 0:
+                features["motor_saturation_pct"] = float(
+                    (max_pwm > 1900).sum() / total
+                )
+                features["motor_max_pwm"] = float(max_pwm.max())
 
     return features
 

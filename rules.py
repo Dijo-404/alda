@@ -17,6 +17,7 @@ FAILURE_COLORS = {
     "compass_interference":  "#F39C12",
     "gps_glitch":            "#3498DB",
     "motor_imbalance":       "#E67E22",
+    "thrust_loss":           "#D35400",
     "power_issue":           "#E91E63",
     "rc_failsafe":           "#1ABC9C",
     "healthy":               "#2ECC71",
@@ -65,6 +66,13 @@ FIXES = {
         "Review BATT_LOW_VOLT and BATT_CRT_VOLT failsafe thresholds",
         "Enable battery monitor (BATT_MONITOR=4)",
         "Calibrate power module (BATT_AMP_PERVLT, BATT_VOLT_MULT)",
+    ],
+    "thrust_loss": [
+        "Check motor/propeller sizing - craft may be underpowered for its weight",
+        "Review MOT_THST_HOVER - if > 0.6 the craft is near thrust limit",
+        "Reduce payload weight or upgrade to higher KV motors",
+        "Check for a failed motor - one motor at max forces others to compensate",
+        "Review RCOU in logs - if all motors hit 1900+ simultaneously = underpowered",
     ],
     "rc_failsafe": [
         "Check transmitter battery level",
@@ -155,6 +163,14 @@ def classify(features):
             parts.append(f"Pitch err = {att_pitch:.1f} deg")
         candidates.append(("motor_imbalance", min(0.92, conf),
             "  |  ".join(parts) or "ATT divergence detected"))
+
+    sat_pct  = features.get("motor_saturation_pct", 0)
+    max_pwm  = features.get("motor_max_pwm", 0)
+    if sat_pct > 0.3:
+        conf = min(0.92, 0.65 + sat_pct * 0.4)
+        candidates.append(("thrust_loss", conf,
+            f"Motors saturated >1900us PWM for {sat_pct*100:.0f}% of flight"
+            f" | max PWM = {max_pwm:.0f}us"))
 
     rc_fs = features.get("rc_failsafe_count", 0)
     if rc_fs > 0:

@@ -65,3 +65,16 @@ def test_rc_failsafe_confidence_increases_with_count():
 
     assert five >= one
     assert five <= 0.95
+
+
+def test_thrust_loss_triggered_by_motor_saturation():
+    features = {
+        "motor_saturation_pct": 0.5,
+        "motor_max_pwm": 1985,
+    }
+
+    results = classify(features)
+    thrust_rows = [row for row in results if row[0] == "thrust_loss"]
+
+    assert thrust_rows
+    assert "saturated" in thrust_rows[0][2]
