@@ -23,6 +23,8 @@ alda/
 ├── plot_output.py   # PNG plot generation and visualization layout
 ├── report_output.py # Terminal report rendering
 ├── rules.py         # Diagnostic rules, threshold definitions, and classification logic
+├── tests/           # Unit tests (pytest)
+│   └── test_rules.py
 ├── README.md        # Project documentation
 └── .gitignore       # Git ignore rules for logs, plot outputs, and python cache
 ```
@@ -67,6 +69,20 @@ You can also view the current classification thresholds by running:
 
 ```bash
 python main.py <path_to_log.bin> --show-thresholds
+```
+
+## Running Tests
+
+Run all tests:
+
+```bash
+python -m pytest -q
+```
+
+Run only classifier tests:
+
+```bash
+python -m pytest -q tests/test_rules.py
 ```
 
 ## Example Run
